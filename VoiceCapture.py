@@ -21,22 +21,24 @@ rec = KaldiRecognizer(model, FRAME_RATE)
 rec.SetWords(True)
 
 class VoiceCapture:
-    def __init__(self):
-        self.root = tk.Tk()
-        self.root.title("Voice Capture")
+    def __init__(self, textField):
+        #self.root = tk.Tk()
+        #self.root.title("Voice Capture")
+        self.textField = textField
+        self.isRunning = False
+        #self.output_text = tk.Text(self.root, wrap="word", height=10, width=40)
+        #self.output_text.pack(pady=10)
 
-        self.output_text = tk.Text(self.root, wrap="word", height=10, width=40)
-        self.output_text.pack(pady=10)
+        #self.start_button = tk.Button(self.root, text="Start", command=self.start_action)
+        #self.start_button.pack(pady=10)
 
-        self.start_button = tk.Button(self.root, text="Start", command=self.start_action)
-        self.start_button.pack(pady=10)
-
-        self.stop_button = tk.Button(self.root, text="Stop", command=self.stop_action)
-        self.stop_button.pack(pady=10)
+        #self.stop_button = tk.Button(self.root, text="Stop", command=self.stop_action)
+        #self.stop_button.pack(pady=10)
 
     def start_action(self):
         messages.put(True)
-        self.display_text("Start button clicked")
+        self.isRunning = True
+        #self.display_text("Start button clicked")
         #self.find_microphone()
                 
         record = Thread(target=self.recordMicrophone)
@@ -47,11 +49,14 @@ class VoiceCapture:
 
     def stop_action(self):
         messages.get()
+        self.isRunning = False
         self.display_text("Stop button clicked")
 
     def display_text(self, text):
-        current_pos = self.output_text.index(tk.INSERT)
-        self.output_text.insert(current_pos, text + "\n")
+        #current_pos = self.output_text.index(tk.INSERT)
+        #self.output_text.insert(current_pos, text + "\n")
+        current_pos = self.textField.index(tk.INSERT)
+        self.textField.after(0, self.textField.insert, current_pos, text + "\n")
 
     def find_microphone(self):
         p = pyaudio.PyAudio()        
