@@ -8,9 +8,10 @@ class TextEditor:
         self.root.title("Cross-Platform Text Editor")
         self.text_area = tk.Text(root, wrap="word", undo=True)
         self.text_area.pack(expand="yes", fill="both")
-
+        self.canvas = tk.Canvas(root, width=200, height=200)
+        self.canvas.pack()
         self.create_menu()
-        self.vc = VoiceCapture(self.text_area)
+        self.vc = VoiceCapture(self.text_area, self.canvas)
         # Bind the "WM_DELETE_WINDOW" event to the on_closing function
         root.protocol("WM_DELETE_WINDOW", self.on_closing)
 

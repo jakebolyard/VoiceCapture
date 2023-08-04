@@ -7,6 +7,7 @@ import json
 import torch
 from vosk import Model, KaldiRecognizer
 from unittest import result
+import numpy as np
 
 messages = Queue()
 recordings = Queue()
@@ -21,10 +22,11 @@ rec = KaldiRecognizer(model, FRAME_RATE)
 rec.SetWords(True)
 
 class VoiceCapture:
-    def __init__(self, textField):
+    def __init__(self, textField, canvas):
         #self.root = tk.Tk()
         #self.root.title("Voice Capture")
         self.textField = textField
+        self.canvas = canvas
         self.isRunning = False
         #self.output_text = tk.Text(self.root, wrap="word", height=10, width=40)
         #self.output_text.pack(pady=10)
@@ -68,17 +70,20 @@ class VoiceCapture:
 
     def recordMicrophone(self, chunk=1024):
         p = pyaudio.PyAudio()
-
+        
         stream = p.open(format=AUDIO_FORMAT,
                         channels=CHANNELS,
                         rate=FRAME_RATE,
                         input=True,
                         input_device_index=1,
-                        frames_per_buffer=chunk)
+                        frames_per_buffer=chunk
+                        )
+        
         frames = []
 
         while not messages.empty():
             data = stream.read(chunk)
+            self.update_amplitude(data)
             frames.append(data)
             #print(str(len(frames)))
 
@@ -103,6 +108,19 @@ class VoiceCapture:
             #print(text)
             self.display_text(text)
         
+    def update_amplitude(self, in_data):
+        audio_data = np.frombuffer(in_data, dtype=np.int16)
+        amplitude = np.abs(audio_data).mean()
+        self.draw_amplitude(amplitude)
+        
+        #return (in_data, pyaudio.paContinue)
+    
+    def draw_amplitude(self, amplitude):
+        self.canvas.delete("amplitude_bar")
+        width, height = 100, 100
+        bar_height = amplitude * height / self.canvas.winfo_height()  # Normalize amplitude to fit canvas
+        self.canvas.create_rectangle(0, height - bar_height, width, height, fill="blue", tags="amplitude_bar")
+        #print(str(amplitude))
 
     def run(self):
         self.root.mainloop()
